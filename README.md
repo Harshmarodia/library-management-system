@@ -1,6 +1,6 @@
 # 📚 Modern Library Management System
 
-![Banner](assets/img/banner.png)
+
 
 A professional, high-end Library Management System built with **PHP** and **MySQL**, featuring a stunning **Glassmorphism UI** and role-based access control.
 

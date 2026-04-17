@@ -24,66 +24,81 @@ $rentals = $conn->query("
     <?php include 'includes/sidebar.php'; ?>
 
     <main class="content-area">
-        <h2 style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Rental Reports & Monitoring</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+            <div>
+                <h1 style="font-size: 32px; font-weight: 800; margin-bottom: 5px;">Rental Reports</h1>
+                <p style="color: var(--text-muted); font-weight: 500;">Monitor lending history and transaction statuses</p>
+            </div>
+            <button class="btn btn-primary" onclick="window.print()">
+                <i class="fas fa-file-pdf"></i> Export PDF
+            </button>
+        </div>
 
-        <div class="glass-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3><i class="fas fa-file-invoice"></i> All Rental Transactions</h3>
-                <div>
-                    <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print"></i> Export Report</button>
-                </div>
+        <div class="glass-card" style="padding: 0;">
+            <div style="padding: 30px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 20px; display: flex; align-items: center; gap: 12px;">
+                    <i class="fas fa-clock-rotate-left" style="color: var(--warning-color);"></i> All Transactions
+                </h3>
             </div>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>Transaction ID</th>
-                        <th>User Name</th>
-                        <th>Book Title</th>
-                        <th>Rent Date</th>
-                        <th>Return Date</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php while($row = $rentals->fetch_assoc()): ?>
-                    <tr>
-                        <td>#RL701<?= $row['id'] ?></td>
-                        <td style="font-weight: 500;"><?= $row['user_name'] ?></td>
-                        <td>
-                            <div><?= $row['book_title'] ?></div>
-                            <div style="font-size: 11px; color: #888;">by <?= $row['book_author'] ?></div>
-                        </td>
-                        <td><?= $row['rent_date'] ?></td>
-                        <td><?= $row['return_date'] ? $row['return_date'] : '<span style="color: #aaa;">Pending</span>' ?></td>
-                        <td>
-                            <span class="badge badge-<?= $row['status'] == 'rented' ? 'danger' : 'success' ?>">
-                                <?= $row['status'] ?>
-                            </span>
-                        </td>
-                        <td>
-                            <?php if($row['status'] == 'rented'): ?>
-                                <button class="btn btn-warning" style="padding: 5px 10px; font-size: 12px;" onclick="showForceReturn(<?= $row['id'] ?>)">
-                                    <i class="fas fa-key"></i> Force Return
-                                </button>
-                                
-                                <!-- Hidden Form for Force Return -->
-                                <div id="forceForm_<?= $row['id'] ?>" style="display:none; margin-top: 10px;">
-                                    <form method="POST" action="actions/force_return_action.php">
-                                        <input type="hidden" name="rental_id" value="<?= $row['id'] ?>">
-                                        <input type="password" name="admin_pass" placeholder="Admin PIN" required style="padding: 5px; border-radius: 5px; border: 1px solid #ddd; width: 100px;">
-                                        <button type="submit" class="btn btn-danger" style="padding: 5px 10px; font-size: 11px;">Confirm</button>
-                                    </form>
-                                </div>
-                            <?php else: ?>
-                                <span style="color: var(--success-color); font-size: 12px;"><i class="fas fa-check-double"></i> Verified</span>
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                    <?php endwhile; ?>
-                </tbody>
-            </table>
+            <div class="table-container" style="padding: 20px 30px 30px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>TXID</th>
+                            <th>Reader Member</th>
+                            <th>Book Details</th>
+                            <th>Rent Date</th>
+                            <th>Return Date</th>
+                            <th>Status</th>
+                            <th style="text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php while($row = $rentals->fetch_assoc()): ?>
+                        <tr>
+                            <td style="font-weight: 700; color: var(--text-muted);">#<?= str_pad($row['id'], 5, '0', STR_PAD_LEFT) ?></td>
+                            <td>
+                                <div style="font-weight: 600; color: white;"><?= $row['user_name'] ?></div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 500; font-size: 14px;"><?= $row['book_title'] ?></div>
+                                <div style="font-size: 12px; color: var(--text-muted);"><?= $row['book_author'] ?></div>
+                            </td>
+                            <td style="font-size: 14px;"><?= date('M d, Y', strtotime($row['rent_date'])) ?></td>
+                            <td style="font-size: 14px; color: <?= $row['return_date'] ? 'inherit' : 'var(--text-muted)' ?>">
+                                <?= $row['return_date'] ? date('M d, Y', strtotime($row['return_date'])) : '<span style="font-style: italic; opacity: 0.5;">Pending</span>' ?>
+                            </td>
+                            <td>
+                                <span class="badge badge-<?= $row['status'] == 'rented' ? 'danger' : 'success' ?>">
+                                    <?= $row['status'] ?>
+                                </span>
+                            </td>
+                            <td style="text-align: right;">
+                                <?php if($row['status'] == 'rented'): ?>
+                                    <button class="btn" style="padding: 8px 16px; background: rgba(241, 196, 15, 0.1); color: var(--warning-color); border: 1px solid rgba(241, 196, 15, 0.2); font-size: 13px;" onclick="showForceReturn(<?= $row['id'] ?>)">
+                                        <i class="fas fa-shield-halved"></i> Force Return
+                                    </button>
+                                    
+                                    <!-- Force Return Modal/Form -->
+                                    <div id="forceForm_<?= $row['id'] ?>" style="display:none; margin-top: 15px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                        <form method="POST" action="actions/force_return_action.php" style="display: flex; gap: 10px;">
+                                            <input type="hidden" name="rental_id" value="<?= $row['id'] ?>">
+                                            <input type="password" name="admin_pass" placeholder="Admin PIN" required style="flex: 1; padding: 10px;">
+                                            <button type="submit" class="btn btn-primary" style="padding: 10px 15px;">OK</button>
+                                        </form>
+                                    </div>
+                                <?php else: ?>
+                                    <div style="color: var(--success-color); font-size: 13px; font-weight: 700;">
+                                        <i class="fas fa-circle-check"></i> Verified
+                                    </div>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
 </div>
@@ -91,7 +106,8 @@ $rentals = $conn->query("
 <script>
 function showForceReturn(id) {
     const form = document.getElementById('forceForm_' + id);
-    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+    if(form.style.display === 'flex') form.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 </script>
 
